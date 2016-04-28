@@ -6,7 +6,7 @@ import (
   . "gopkg.in/check.v1"
 )
 
-func Test(t *testing.T) { TestingT(t) }
+func TestAnalyzer(t *testing.T) { TestingT(t) }
 
 type AnalyzerTests struct {
   analyzer *MailAnalyzer
@@ -22,7 +22,7 @@ func (t *AnalyzerTests) TestGetMailFromData(c *C) {
   now := time.Now()
   mail := t.analyzer.GetMailFromData("leorock64@gmail.com", "Almojabanas a mil", "vendo empanadas", now)
 
-  c.Check(t.analyzer.mails.length, Equals, 1)
+  c.Check(len(t.analyzer.mails), Equals, 1)
 
   c.Check(mail.sender, Equals, "leorock64@gmail.com")
   c.Check(mail.subject, Equals, "Almojabanas a mil")

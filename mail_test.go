@@ -1,6 +1,7 @@
-package mail_analyzer
+package mail_analyzer_test
 
 import (
+  . "MailAnalyzer"
   "time"
   "testing"
   . "gopkg.in/check.v1"
@@ -20,7 +21,7 @@ func (t *MailTests) SetUpTest(c *C) {
   content := "mano hay tarea pa mañana"
   time := time.Now()
 
-  t.mail = Mail{sender, subject, content, time, []string{}, []string{}, []string{}}
+  t.mail = Mail{sender: sender, subject: subject, content: content, date: time}
 }
 
 func (t *MailTests) TestCreateMail(c *C) {
@@ -45,7 +46,7 @@ func (t *MailTests) TestAddRecipient(c *C) {
 
   mail.AddRecipient("yonosoydeverdad@fake.com")
   mail.AddRecipient("yotampoco@fake.com")
-  
+
   c.Assert(len(mail.recipients), Equals, 2)
   c.Assert(mail.recipients[0], Equals, "yonosoydeverdad@fake.com")
   c.Assert(mail.recipients[1], Equals, "yotampoco@fake.com")
@@ -56,7 +57,7 @@ func (t *MailTests) TestAddCC(c *C) {
 
   mail.AddCC("yonosoydeverdad@fake.com")
   mail.AddCC("yotampoco@fake.com")
-  
+
   c.Assert(len(mail.cc), Equals, 2)
   c.Assert(mail.cc[0], Equals, "yonosoydeverdad@fake.com")
   c.Assert(mail.cc[1], Equals, "yotampoco@fake.com")
@@ -67,7 +68,7 @@ func (t *MailTests) TestAddCCO(c *C) {
 
   mail.AddCCO("yonosoydeverdad@fake.com")
   mail.AddCCO("yotampoco@fake.com")
-  
+
   c.Assert(len(mail.cco), Equals, 2)
   c.Assert(mail.cco[0], Equals, "yonosoydeverdad@fake.com")
   c.Assert(mail.cco[1], Equals, "yotampoco@fake.com")

@@ -14,9 +14,9 @@ type Mail struct {
   cco [] string
 }
 
-type MailAnalyzer struct {
+type Analyzer struct {
   email string
-  authfilename string
   mails [] Mail
+  Client MailClient
 }
 

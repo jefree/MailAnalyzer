@@ -1,6 +1,7 @@
-package mail_analyzer
+package mail_analyzer_test
 
 import (
+  . "MailAnalyzer"
   "time"
   "testing"
   . "gopkg.in/check.v1"
@@ -9,25 +10,77 @@ import (
 func TestAnalyzer(t *testing.T) { TestingT(t) }
 
 type AnalyzerTests struct {
-  analyzer *MailAnalyzer
+}
+
+type AnalyzerMock struct {
+  Analyzer
+}
+
+func (a *AnalyzerMock) Connect(email string, secretFile string) {
+  a.Client = &MailClientMock{}
+}
+
+type MailClientMock struct {
+  MailClient
+}
+
+func (c *MailClientMock) GetList() []ListItem {
+  return  []ListItem  {
+    ListItem {id: "12345678", threadId: "abc"},
+    ListItem {id: "87654321", threadId: "cba"},
+  }
+}
+
+func (c *MailClientMock) GetMailDataById(id string) Mail {
+  return Mail {
+    id: id,
+    sender: "test@gmail.com",
+    subject: "Testing",
+    content: "Just a Test",
+  }
 }
 
 var _ = Suite(&AnalyzerTests{})
 
 func (t *AnalyzerTests) SetUpTest(c *C) {
-  t.analyzer = &MailAnalyzer{"jeffersongarzonm@gmail.com", "auth.json", []Mail{}}
+  t.analyzer = &AnalyzerMock{}
 }
 
-func (t *AnalyzerTests) TestGetMailFromData(c *C) {
+func (t *AnalyzerTests) TestConnect(c *C) {
+  t.analyzer.Connect("jeffersongarzonm@gmail.com", "client_secret.json")
+  c.Check(t.analyzer.client, Not(Equals), nil)
+}
+
+func (t *AnalyzerTests) TestAddMail (c *C) {
   now := time.Now()
-  mail := t.analyzer.GetMailFromData("leorock64@gmail.com", "Almojabanas a mil", "vendo empanadas", now)
+  mail := Mail{
+    sender: "leorock64@gmail.com",
+    subject: "Almojabanas a mil",
+    content: "vendo empanadas",
+    date: now,
+  }
+
+  t.analyzer.AddMail(mail)
 
   c.Check(len(t.analyzer.mails), Equals, 1)
 
-  c.Check(mail.sender, Equals, "leorock64@gmail.com")
-  c.Check(mail.subject, Equals, "Almojabanas a mil")
-  c.Check(mail.content, Equals, "vendo empanadas")
-  c.Check(mail.time, Equals, now)
+  response := t.analyzer.mails[0]
+
+  c.Check(response.sender, Equals, "leorock64@gmail.com")
+  c.Check(response.subject, Equals, "Almojabanas a mil")
+  c.Check(response.content, Equals, "vendo empanadas")
+  c.Check(response.date, Equals, now)
+
+}
+
+func (t *AnalyzerTests) TestLoadMails(c *C) {
+  t.analyzer.Connect()
+  t.analyzer.LoadMails()
+
+  c.Check(len(t.analyzer.email), Equals, 2)
+
+  c.Check(t.analyzer.emails[0].id, Equals, "12345678")
+  c.Check(t.analyzer.emails[1].id, Equals, "87654321")
 }
 
 func (t *AnalyzerTests) TestGetStringCSV(c *C) {
@@ -36,7 +89,7 @@ func (t *AnalyzerTests) TestGetStringCSV(c *C) {
   content := "mano hay tarea pa mañana"
   time := time.Now()
 
-  mail := Mail{sender, subject, content, time, []string{}, []string{}, []string{}}
+  mail := Mail{sender: sender, subject: subject, content: content, date: time}
 
   mail.AddRecipient("jeffersongarzonm@gmail.com")
   mail.AddRecipient("minenequerido@gmail.com")
